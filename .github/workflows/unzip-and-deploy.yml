@@ -1,50 +1,58 @@
-name: Unzip and Deploy Marzipano Project
+name: Unzip, Deploy to gh-pages, and Clean Uploads
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'uploads/*.zip'
 
-permissions:
-  contents: write
-
 jobs:
-  unzip_and_deploy:
+  process_and_deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
-      - name: Extract and Deploy
+      - name: Extract, Deploy, and Clean
         run: |
-          mkdir temp_extraction
-          cd uploads
+          UPLOADS_DIR="uploads"
+          TEMP_DIR="temp_extraction"
+          GH_PAGES_BRANCH="gh-pages"
+          mkdir -p $TEMP_DIR
+          cd $UPLOADS_DIR
           for zipfile in *.zip; do
             project_name=$(basename "$zipfile" .zip)
-            unzip "$zipfile" -d "../temp_extraction"
-            cd ..
-            if [ -d "temp_extraction/app-files" ]; then
-              mkdir -p "$project_name"
-              cp -r temp_extraction/app-files/* "$project_name/"
+            unzip "$zipfile" -d "../$TEMP_DIR"
+            cd "../$TEMP_DIR"
+            if [ -d "app-files" ]; then
+              mv app-files "$project_name"
+              git config --global user.email "github-actions[bot]@users.noreply.github.com"
+              git config --global user.name "github-actions[bot]"
+              git fetch origin $GH_PAGES_BRANCH
+              git checkout $GH_PAGES_BRANCH
+              cp -r "$project_name"/* .
+              git add .
+              git commit -m "Deploy $project_name to GitHub Pages"
+              git push origin $GH_PAGES_BRANCH
+              cd "../$UPLOADS_DIR"
+              rm "$zipfile"
             else
               echo "Error: 'app-files' directory not found in $zipfile"
               exit 1
             fi
-            rm -rf temp_extraction/*
-            cd uploads
           done
-          rm -f *.zip
-          cd ..
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git fetch origin gh-pages
-          git checkout gh-pages
-          git add -A
-          git commit -m "Deploy updated Marzipano projects"
-          git push origin gh-pages
+          git checkout main
+          git add -u $UPLOADS_DIR
+          git commit -m "Cleaned up processed ZIP files from uploads directory"
+          git push origin main
