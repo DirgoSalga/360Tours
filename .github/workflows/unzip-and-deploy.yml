@@ -5,6 +5,9 @@ on:
     paths:
       - 'uploads/*.zip'
 
+permissions:
+  contents: write
+
 jobs:
   unzip_and_deploy:
     runs-on: ubuntu-latest
