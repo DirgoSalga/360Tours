@@ -20,52 +20,28 @@ jobs:
 
       - name: Extract and Deploy
         run: |
-          # Create a temporary directory for extraction
           mkdir temp_extraction
-
-          # Move to the uploads directory
           cd uploads
-
-          # Loop through all ZIP files in the uploads directory
           for zipfile in *.zip; do
-            # Extract the base name of the ZIP file (e.g., ProjectName)
             project_name=$(basename "$zipfile" .zip)
-
-            # Unzip the file into the temporary directory
             unzip "$zipfile" -d "../temp_extraction"
-
-            # Move back to the root directory
             cd ..
-
-            # Rename the extracted app-files directory to the project name
-            mv "temp_extraction/$project_name/app-files" "$project_name"
-
-            # Remove the temporary extraction directory
-            rm -rf temp_extraction
-
-            # Move back to the uploads directory for the next iteration
+            if [ -d "temp_extraction/app-files" ]; then
+              mkdir -p "$project_name"
+              cp -r temp_extraction/app-files/* "$project_name/"
+            else
+              echo "Error: 'app-files' directory not found in $zipfile"
+              exit 1
+            fi
+            rm -rf temp_extraction/*
             cd uploads
           done
-
-          # Clean up: remove all ZIP files from the uploads directory
           rm -f *.zip
-
-          # Move back to the root directory
           cd ..
-
-          # Configure Git
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-
-          # Switch to the gh-pages branch
           git fetch origin gh-pages
           git checkout gh-pages
-
-          # Add the new or updated project directories
           git add -A
-
-          # Commit the changes
           git commit -m "Deploy updated Marzipano projects"
-
-          # Push the changes to the gh-pages branch
           git push origin gh-pages
