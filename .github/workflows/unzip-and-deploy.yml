@@ -35,6 +35,7 @@ jobs:
             unzip "$zipfile" -d "$TEMP_DIR"
             if [ -d "$TEMP_DIR/app-files" ]; then
               mv "$TEMP_DIR/app-files" "./$project_name"
+              rm -rf "$TEMP_DIR"
               git config --global user.email "github-actions[bot]@users.noreply.github.com"
               git config --global user.name "github-actions[bot]"
               git fetch origin $GH_PAGES_BRANCH
