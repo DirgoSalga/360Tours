@@ -30,23 +30,19 @@ jobs:
           TEMP_DIR="temp_extraction"
           GH_PAGES_BRANCH="gh-pages"
           mkdir -p $TEMP_DIR
-          cd $UPLOADS_DIR
-          for zipfile in *.zip; do
+          for zipfile in "$UPLOADS_DIR/*.zip"; do
             project_name=$(basename "$zipfile" .zip)
-            unzip "$zipfile" -d "../$TEMP_DIR"
-            cd "../$TEMP_DIR"
+            unzip "$UPLOADS_DIR/$zipfile" -d "$TEMP_DIR"
             if [ -d "app-files" ]; then
-              mv app-files "$project_name"
+              mv "$TEMP_DIR/app-files" "./$project_name"
               git config --global user.email "github-actions[bot]@users.noreply.github.com"
               git config --global user.name "github-actions[bot]"
               git fetch origin $GH_PAGES_BRANCH
               git checkout $GH_PAGES_BRANCH
-              cp -r "$project_name"/* .
-              git add .
+              git add $project_name
               git commit -m "Deploy $project_name to GitHub Pages"
               git push origin $GH_PAGES_BRANCH
-              cd "../$UPLOADS_DIR"
-              rm "$zipfile"
+              rm "$UPLOADS_DIR/$zipfile"
             else
               echo "Error: 'app-files' directory not found in $zipfile"
               exit 1
