@@ -32,8 +32,8 @@ jobs:
           mkdir -p $TEMP_DIR
           for zipfile in "$UPLOADS_DIR/*.zip"; do
             project_name=$(basename "$zipfile" .zip)
-            unzip "$UPLOADS_DIR/$zipfile" -d "$TEMP_DIR"
-            if [ -d "app-files" ]; then
+            unzip "$zipfile" -d "$TEMP_DIR"
+            if [ -d "$TEMP_DIR/app-files" ]; then
               mv "$TEMP_DIR/app-files" "./$project_name"
               git config --global user.email "github-actions[bot]@users.noreply.github.com"
               git config --global user.name "github-actions[bot]"
@@ -42,7 +42,7 @@ jobs:
               git add $project_name
               git commit -m "Deploy $project_name to GitHub Pages"
               git push origin $GH_PAGES_BRANCH
-              rm "$UPLOADS_DIR/$zipfile"
+              rm "$zipfile"
             else
               echo "Error: 'app-files' directory not found in $zipfile"
               exit 1
