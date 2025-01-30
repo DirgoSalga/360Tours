@@ -32,7 +32,7 @@ jobs:
           mkdir -p $TEMP_DIR
           for zipfile in "$UPLOADS_DIR/*.zip"; do
             project_name=$(basename "$zipfile" .zip)
-            unzip "$UPLOADS_DIR/$zipfile" -d "$TEMP_DIR"
+            unzip "$zipfile" -d "$TEMP_DIR"
             if [ -d "app-files" ]; then
               mv "$TEMP_DIR/app-files" "./$project_name"
               git config --global user.email "github-actions[bot]@users.noreply.github.com"
