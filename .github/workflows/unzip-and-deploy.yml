@@ -30,7 +30,7 @@ jobs:
           TEMP_DIR="temp_extraction"
           GH_PAGES_BRANCH="gh-pages"
           mkdir -p $TEMP_DIR
-          for zipfile in "$UPLOADS_DIR/*.zip"; do
+          for zipfile in "$UPLOADS_DIR"/*.zip; do
             project_name=$(basename "$zipfile" .zip)
             unzip "$zipfile" -d "$TEMP_DIR"
             if [ -d "$TEMP_DIR/app-files" ]; then
